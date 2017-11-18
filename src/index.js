@@ -6,7 +6,7 @@ import bodyParser from 'body-parser';
 import initializeDb from './db';
 import middleware from './middleware';
 import api from './api';
-import config from './config/config.json';
+import config from './config/config.js';
 import web3 from './config/web3';
 
 let app = express();
@@ -20,13 +20,9 @@ app.use(cors({
 	exposedHeaders: config.corsHeaders
 }));
 
-
-//app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json({
 	limit: config.bodyLimit
 }));
-
-
 
 // connect to db
 initializeDb(db => {

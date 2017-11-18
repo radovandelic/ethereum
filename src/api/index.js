@@ -25,20 +25,40 @@ export default ({ config, db, web3 }) => {
 
 	api.get("/getBalance/:address", (req, res) => {
 		web3.eth.getBalance(req.params.address)
-			.then(balance => res.json(balance))
+			.then(balance => res.json(web3.utils.fromWei(balance, 'ether')))
 			.catch(err => res.json(err));
 	})
 
 	api.post("/transaction", (req, res) => {
-		var privateKey = req.body.privateKey;
-		var destination = req.body.destination;
-		var amount = "0x" + req.body.amount;
-		var account = web3.eth.accounts.privateKeyToAccount(privateKey);
-		var tx = {
-			from: account.address,
-			to: destination,
-			value: amount,
-		}
+		var amount = web3.utils.toHex(web3.utils.toWei(req.body.amount));
+		var account = web3.eth.accounts.privateKeyToAccount(req.body.privateKey);
+		web3.eth.getTransactionCount(account.address)
+			.then(nonce => {
+				var tx = {
+					nonce: nonce,
+					from: account.address,
+					to: req.body.destination,
+					value: amount,
+					gas: config.gas,
+					gasPrice: config.gasPrice,
+					gasLimit: config.gasLimit
+				}
+				var privateKey = new Buffer(req.body.privateKey.substring(2, req.body.privateKey.length), 'hex');
+				tx = new Tx(tx);
+				tx.sign(privateKey);
+				var stx = tx.serialize();
+
+				web3.eth.sendSignedTransaction('0x' + stx.toString('hex'))
+					.on('receipt', (response) => {
+						res.json(response);
+					})
+					.catch(err => {
+						res.json(err);
+					})
+			})
+			.catch(err => {
+				res.json(err);
+			})
 	})
 
 	return api;
