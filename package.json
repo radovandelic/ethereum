@@ -1,7 +1,7 @@
 {
   "name": "ethereum",
   "version": "0.1.0",
-  "description": "Starter project for a ethereum API",
+  "description": "Starter project for an ethereum API",
   "main": "dist",
   "scripts": {
     "dev": "nodemon -w src --exec \"babel-node src --presets es2015,stage-0\"",
